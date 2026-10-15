@@ -1,0 +1,48 @@
+[
+  {
+    "ContainingType": "api_desafio_tecnico_dev_junior.src.Api.Controllers.ProfessoresController",
+    "Method": "BuscarProfessores",
+    "RelativePath": "api/Professores/busca",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "req",
+        "Type": "api_desafio_tecnico_dev_junior.src.Application.DTOs.AlunoBuscaRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "api_desafio_tecnico_dev_junior.src.Application.DTOs.BuscaProfessorResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "api_desafio_tecnico_dev_junior.src.Api.Controllers.ProfessoresController",
+    "Method": "GetIdiomasDisponiveis",
+    "RelativePath": "api/Professores/idiomas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]

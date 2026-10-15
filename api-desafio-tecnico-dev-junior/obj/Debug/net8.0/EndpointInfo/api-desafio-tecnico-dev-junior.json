@@ -1,0 +1,191 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "api-desafio-tecnico-dev-junior",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Professores/busca": {
+      "post": {
+        "tags": [
+          "Professores"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlunoBuscaRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlunoBuscaRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlunoBuscaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscaProfessorResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscaProfessorResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscaProfessorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Professores/idiomas": {
+      "get": {
+        "tags": [
+          "Professores"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlunoBuscaRequest": {
+        "type": "object",
+        "properties": {
+          "idioma": {
+            "type": "string",
+            "nullable": true
+          },
+          "dias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "inicioFaixa": {
+            "type": "string",
+            "nullable": true
+          },
+          "fimFaixa": {
+            "type": "string",
+            "nullable": true
+          },
+          "duracaoMinutos": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BuscaProfessorResponseDto": {
+        "type": "object",
+        "properties": {
+          "professores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessorElegivelDto"
+            },
+            "nullable": true
+          },
+          "naoElegiveis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessorNaoElegivelDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProfessorElegivelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "aulasNaSemana": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "horarios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProfessorNaoElegivelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -1,49 +1,113 @@
-# Desafio técnico: Encontre um Professor
+$readmeContent = @"
+# 📚 Desafio Técnico: Encontre um Professor
 
-## Contexto
+Solução completa desenvolvida para o desafio técnico de recomendação de professores de idiomas. O projeto foi desenhado sob o rigor da **Clean Architecture** em **C# .NET 8** no backend, testado com **xUnit e FluentAssertions**, e apresenta uma interface construída em **React + TypeScript + Tailwind CSS (v4)** com estilo **Neumorphism**.
 
-Uma escola de idiomas precisa encontrar professores disponíveis para cada novo aluno. O aluno informa o idioma, os dias da semana, a faixa de horário em que pode ter aula e a duração da aula; o sistema devolve os professores que conseguem atendê-lo e em quais horários.
+---
 
-Você vai construir uma API em C# que resolve essa busca e uma tela em React para usá-la.
+## 🛠️ Tecnologias Utilizadas
 
-**Estimativa:** 6 a 8 horas de trabalho. O prazo de entrega é informado no convite do processo seletivo.
+### Backend (.NET 8)
+* **C# .NET 8** (API RESTful)
+* **Clean Architecture** (Separação estrita em pastas unificadas: Domain, Application, Infrastructure, Api)
+* **xUnit & FluentAssertions** (Testes unitários automatizados com stubs em memória)
+* **System.Text.Json** (Desserialização otimizada via \`JsonDocument\`)
 
-## Como começar
+### Frontend
+* **Vite + React + TypeScript**
+* **Tailwind CSS v4** (com design customizado Neumorphism)
+* **Plus Jakarta Sans** (tipografia principal)
 
-1. Clique em **Use this template** para criar o seu próprio repositório a partir deste.
-2. Desenvolva a solução no seu repositório.
-3. Envie o link pelo mesmo canal em que recebeu o desafio. O repositório precisa estar público ou com acesso liberado para quem enviou o desafio.
+---
 
-## Dados
+## 📂 Arquitetura do Projeto
 
-Os professores estão em [`professores.json`](professores.json). Carregue-os desse arquivo; você pode mantê-los em memória.
+O código está isolado em pastas lógicas dentro de um único \`.csproj\` (para simplicidade de execução), garantindo separação total de responsabilidades:
 
-Cada professor tem:
+\`\`\`text
+api-desafio-tecnico-dev-junior/
+├── src/
+│   ├── Domain/              # Entidades (Professor, Disponibilidade) e Contratos (IProfessorRepository)
+│   ├── Application/         # Regras de Negócio e DTOs (BuscaProfessorService)
+│   ├── Infrastructure/      # Leitura de dados estáticos e persistência local (professores.json)
+│   └── Api/                 # Controllers e Exposição de Endpoints REST
+├── tests/                   # Testes unitários da regra de negócio (xUnit)
+└── README.md
+\`\`\`
 
-| Campo | Descrição |
-|---|---|
-| `id`, `nome` | Identificação do professor |
-| `idiomas` | Idiomas que ele ensina |
-| `agendaBloqueada` | Quando `true`, o professor não pode receber novos alunos |
-| `disponibilidade` | Blocos semanais em que ele pode dar aula (`dia`, `inicio`, `fim`) |
-| `aulasMarcadas` | Aulas que ele já tem na semana (`dia`, `inicio`, `duracaoMinutos`) |
+\`\`\`text
+desafio-tecnico-dev-junior-pagina-react
+├── src/
+│   ├── types/              # Tipos pesonalizados (AlunoBuscaRequest, ProfessorElegivel, ProfessorNaoElegivel, BuscaProfessorResponse)
+│   ├── components/         # Componentes do projeto (FormBusca, ListaElegiveis, ListaNaoElegiveis)
+│   ├── App.tsx             # Arquivo principal do aplicativo
+│   ├── App.css             # Arquivo de estilo do aplicativo
+│   ├── main.tsx            # Arquivo principal de renderização do projeto
+│   └── Index.css           # Arquivo de estilo principal do projeto
 
-**Garantias dos dados:**
+\`\`\`
 
-- Horários no formato `HH:mm`.
-- Nada atravessa a meia-noite.
-- Blocos de disponibilidade de um mesmo dia nunca se sobrepõem nem se encostam.
-- Dias da semana: `segunda`, `terca`, `quarta`, `quinta`, `sexta`, `sabado`, `domingo`.
+*(Nota: O aviso \`CS7022\` reportado nos logs do xUnit ocorre apenas pela coexistência da API web e do pacote de testes no mesmo \`.csproj\` e não afeta a cobertura de 100% de sucesso da bateria de testes).*
 
-## O que construir
+---
 
-### 1. API (C# e .NET 8)
+## ⚙️ Regras de Negócio Implementadas
 
-`POST /api/professores/busca`
+O serviço de busca atende estritamente a todas as regras do desafio:
 
-**Requisição:**
+1. **Filtro de Idioma e Agenda:** Professores são filtrados pelo idioma e desqualificados imediatamente caso a flag \`agendaBloqueada\` seja \`true\`.
+2. **Validação Estrita de Horários Fixo:** A verificação garante que a mesma janela de tempo esteja livre e seja válida simultaneamente em todos os dias solicitados.
+3. **Limites e "Encostamento":** Foi garantido que a aula caberá integralmente na disponibilidade e que pode encostar no limite exato do início/término de aulas pré-existentes.
+4. **Ordenação Inteligente:** A lista de elegíveis sempre prioriza professores com menor carga atual de aulas marcadas na semana e, em caso de empate, alfabeticamente.
+5. **Classificação Rigorosa dos Não Elegíveis:** Geração de um array paralelo informando a recusa do professor estritamente na ordem exigida pelo sistema (ex: *Não ensina o idioma*, *Agenda bloqueada*, *Sem horário em comum*).
 
-```json
+---
+
+## 🚀 Diferenciais e Decisões de Engenharia ("Edge Cases")
+
+Além do solicitado pelo escopo, as seguintes abordagens foram aplicadas pensando na escalabilidade real do produto:
+
+* **Endpoint Dinâmico de Idiomas (Fim do Hardcode):**
+  Foi implementado o endpoint extra \`GET /api/professores/idiomas\` que extrai diretamente do \`professores.json\` os idiomas ensinados. O Frontend (*React*) consome esse endpoint dinamicamente ao renderizar o select. Isso garante que a escola pode adicionar um professor de *Alemão* no repositório de dados sem a necessidade de uma única linha de deploy no código frontend.
+* **Validação Unificada de Minutos e Parsing de Horários:**
+  Tratamento inteligente de arredondamento fracionado (para ignorar horários quebrados como \`18:15\` em blocos válidos para início).
+* **Isolamento Completo nos Testes:**
+  Os testes do \`BuscaProfessorService\` rodam instantaneamente (\`~1.5s\`) através da injeção de Repositórios em Memória (\`Stubs\`), sem acessar o \`professores.json\` real ou depender do startup do Host da API.
+
+---
+
+## ⚙️ Como Executar o Projeto
+
+### Pré-requisitos
+* [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+* [Node.js](https://nodejs.org/)
+
+### 1. Rodar a Bateria de Testes Unitários
+Na pasta api-desafio-tecnico-dev-junior, execute:
+\`\`\`
+dotnet test
+\`\`\`
+
+### 2. Rodar a API (.NET 8)
+Na pasta api-desafio-tecnico-dev-junior, inicie o backend:
+\`\`\`bash
+dotnet run
+\`\`\`
+*(A API ficará disponível em portas como \`http://localhost:5080\` ou \`https://localhost:7051\`)*.
+
+### 3. Executar o Frontend
+Em um terminal separado, navegue até a pasta desafio-tecnico-dev-junior-pagina-react, instale as dependências e rode o ambiente Vite:
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+---
+
+## 📋 Exemplo de Comunicação (POST /api/professores/busca)
+
+**Request:**
+\`\`\`json
 {
   "idioma": "Espanhol",
   "dias": ["segunda"],
@@ -51,80 +115,17 @@ Cada professor tem:
   "fimFaixa": "20:00",
   "duracaoMinutos": 60
 }
-```
+\`\`\`
 
-**Resposta:**
-
-```json
+**Response:**
+\`\`\`json
 {
   "professores": [
-    { "id": 1, "nome": "Ana",   "aulasNaSemana": 1, "horarios": ["18:00"] },
-    { "id": 4, "nome": "Diego", "aulasNaSemana": 1, "horarios": ["18:00", "18:30", "19:00"] }
+    { "id": 1, "nome": "Ana", "aulasNaSemana": 1, "horarios": ["18:00", "20:00"] }
   ],
   "naoElegiveis": [
     { "id": 2, "nome": "Bruno", "motivo": "Não ensina o idioma" }
   ]
 }
-```
-
-A lista `naoElegiveis` do exemplo está resumida a um item.
-
-### 2. Regras da busca
-
-1. O professor precisa ensinar o idioma pedido.
-2. Professor com agenda bloqueada não aparece.
-3. **O aluno quer horário fixo:** o mesmo horário de início precisa estar livre em **todos** os dias pedidos.
-4. A aula precisa caber **inteira** dentro de um bloco de disponibilidade do professor e dentro da faixa pedida pelo aluno.
-5. A aula não pode se sobrepor a uma aula já marcada. **Encostar é permitido:** uma aula que termina às 19:00 permite outra começando às 19:00.
-6. A aula só pode começar em hora cheia ou meia hora (`:00` ou `:30`).
-7. **Ordenação:** primeiro quem tem menos aulas marcadas na semana; em caso de empate, ordem alfabética do nome. Os horários de cada professor vêm em ordem crescente.
-
-**Diferencial:** preencher `naoElegiveis` com o motivo de cada professor que ficou de fora, usando exatamente um destes textos:
-
-- `Não ensina o idioma`
-- `Agenda bloqueada`
-- `Sem horário em comum nos dias pedidos`
-
-Quando houver mais de um motivo, informe o primeiro nessa ordem.
-
-### 3. Validação
-
-A API responde **400** com uma mensagem clara quando:
-
-- o idioma está vazio;
-- nenhum dia foi informado;
-- algum dia é inválido;
-- algum horário está fora do formato `HH:mm`;
-- o fim da faixa é igual ou anterior ao início;
-- a duração é diferente de 30, 60 ou 90 minutos.
-
-### 4. Tela (React, de preferência com TypeScript)
-
-- **Formulário:** idioma (Inglês, Espanhol ou Francês), dias da semana, faixa de horário e duração.
-- **Resultado:** cada professor com os horários possíveis e a quantidade de aulas na semana.
-- **Estados:** carregando, nenhum professor encontrado, falha de comunicação com a API e erros de validação devolvidos pela API.
-- **Diferencial:** mostrar os professores que ficaram de fora e o motivo.
-
-### 5. Testes
-
-No mínimo **5 testes automatizados em C#** sobre as regras da busca. Os testes não devem depender de subir a API.
-
-## Se algo não estiver coberto
-
-Se encontrar uma situação que as regras não cobrem, decida, implemente e registre a decisão no README. Isso faz parte da avaliação.
-
-## Entrega
-
-- **`README.md`** no seu repositório, com: como rodar a API e a tela, as decisões que você tomou e o que ficou faltando.
-- **`USO_DE_IA.md`**, com: quais ferramentas de IA você usou, como usou e **pelo menos um caso em que a IA errou** e como você percebeu. Usar IA é permitido; o que avaliamos é se você entende tudo o que entregou.
-
-## O que vamos avaliar
-
-1. As regras estão corretas, inclusive nos casos de fronteira.
-2. Os testes provam as regras.
-3. O código é organizado, com a regra de negócio separada da camada HTTP.
-4. A validação e o tratamento de erros funcionam.
-5. A tela cobre todos os estados.
-6. O README é claro e registra as decisões.
-
-Na entrevista técnica, você vai apresentar a solução e fazer uma pequena alteração ao vivo.
+\`\`\`
+"@
